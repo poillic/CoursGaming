@@ -26,6 +26,7 @@ var States = {
 			);
 
 			s.animations.add('walk');
+			s.play('walk', 10, true);
 			//On définie la velocité du sprite aléatoirement
 			s.body.velocity.set(
 				game.rnd.integerInRange(-200, 200),
