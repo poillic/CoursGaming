@@ -24,7 +24,7 @@ var States = {
 
 		this.img.bkg = game.add.tileSprite(0, 0, 600, 450, 'starfield');
 		this.ballOnPaddle = true;
-		
+
 		this.palette = game.add.sprite(300, 420, 'palette');
 		this.palette.anchor.set(.5, 0);
 		game.physics.enable( this.palette, Phaser.Physics.ARCADE );
@@ -102,9 +102,9 @@ var States = {
 		}
 	},
 	destroyBrick: function(ball, brick){
-		if( this.bricks.countLiving() > 1 ){
-			brick.destroy();
-		}else{
+		brick.destroy();
+		if( this.bricks.countLiving() <= 0 ){
+			this.ball.body.velocity.setTo(0, 0);
 			this.gameText.text = "You win";
 			this.gameText.visible = true;
 		}
