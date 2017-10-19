@@ -8,7 +8,9 @@ var States = {
 	anim : null,
 	bricks: null,
 	ball : null,
+	lives : null,
 	ballOnPaddle : true,
+	gameText : null,
 	preload : function(){
 		game.load.image('starfield', './assets/img/starfield.jpg');
 		game.load.image('palette', './assets/img/palette.png');
@@ -21,7 +23,8 @@ var States = {
 		game.physics.arcade.checkCollision.down = false;
 
 		this.img.bkg = game.add.tileSprite(0, 0, 600, 450, 'starfield');
-
+		this.ballOnPaddle = true;
+		
 		this.palette = game.add.sprite(300, 420, 'palette');
 		this.palette.anchor.set(.5, 0);
 		game.physics.enable( this.palette, Phaser.Physics.ARCADE );
@@ -38,9 +41,20 @@ var States = {
 		this.ball.body.bounce.set(1);
 		this.ball.body.collideWorldBounds = true;
 
+		this.gameText = game.add.text(300, 225, 'Some Text', {font: "72px Arial", fill:"#ffffff", align: "center"} );
+		this.gameText.anchor.set(.5, .5);
+		this.gameText.visible = false;
+
 		this.cursors = game.input.keyboard.createCursorKeys();
 		game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
 		this.cursors.spaceKey = game.input.keyboard.addKey( Phaser.Keyboard.SPACEBAR );
+
+		this.lives = game.add.group();
+
+		for( var i = 0; i < 3; i ++){
+			var l = this.lives.create( 475 + i*30, 10, 'palette' );
+			l.scale.set(.3, .3);
+		}
 
 		this.bricks = game.add.group();
 		this.bricks.enableBody = true;
@@ -53,7 +67,7 @@ var States = {
 				var sprite = x % 2 ? 'brick-blue' : 'brick-green';
 				var b = this.bricks.create(50 + (x*50), 30 + (y*15), sprite);
 				b.body.immovable = true;
-			}		
+			}		 
 		}
 
 		this.bricks.setAll('body.bounce', 1);
@@ -88,7 +102,12 @@ var States = {
 		}
 	},
 	destroyBrick: function(ball, brick){
-		brick.destroy();
+		if( this.bricks.countLiving() > 1 ){
+			brick.destroy();
+		}else{
+			this.gameText.text = "You win";
+			this.gameText.visible = true;
+		}
 	},
 	setBallDirection: function(ball, palette){
 		if( !this.ballOnPaddle ){	
@@ -98,9 +117,19 @@ var States = {
 		
 	},
 	ballLost: function(){
-		this.ballOnPaddle = true;
-		this.palette.reset( 300, 420 );
-		this.ball.reset( this.palette.x, this.palette.y );
+		if( this.lives.countLiving() <= 1 ){	
+			this.gameText.text = "Game Over \n Click to restart";
+			this.gameText.visible = true;
+			game.input.onTap.addOnce( this.restart, this );
+		}else{
+			this.ballOnPaddle = true;
+			this.palette.reset( 300, 420 );
+			this.ball.reset( this.palette.x, this.palette.y );
+			this.lives.getFirstAlive().destroy();
+		}
+	},
+	restart: function(){
+		game.state.restart();
 	}
 }
 
