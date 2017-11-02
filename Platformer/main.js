@@ -6,11 +6,13 @@ var States = {
 	anim : null,
 	player : null,
 	isJumping: false,
+	jumpTimer: 0,
 	preload : function(){
 		game.load.atlasXML('player', './assets/img/alienGreen.png', './assets/alienGreen.xml');
 	},
 	create : function(){
 		game.physics.startSystem(Phaser.Physics.ARCADE);
+		game.physics.arcade.gravity.y = 250;
 
 		this.player = game.add.sprite(300, 400, 'player');
 		this.player.anchor.setTo( 0.5, 1 );
@@ -19,6 +21,7 @@ var States = {
 		this.player.animations.add('jump', [5]);
 
 		game.physics.enable( this.player, Phaser.Physics.ARCADE );
+		this.player.body.collideWorldBounds = true;
 
 		this.cursors = game.input.keyboard.createCursorKeys();
 		game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
@@ -37,13 +40,22 @@ var States = {
 		}
 
 		if( this.player.body.velocity.x != 0 ){
-			this.player.animations.play('walk', 8, true);
+			if( !this.isJumping ){
+				this.player.animations.play('walk', 8, true);
+			}
 		}else{
 			this.player.animations.play('idle', 10, true);
 		}
 
-		if( this.cursors.spaceKey.isDown ){
+		if( this.player.body.onFloor() ){
+			this.isJumping = false;
+		}
+
+		if( this.cursors.spaceKey.isDown && game.time.now > this.jumpTimer ){
+			this.isJumping = true;
 			this.player.animations.play('jump', 8, true);
+			this.player.body.velocity.y = -250;
+			this.jumpTimer = game.time.now + 750;
 		}
 	},
 	render : function(){
